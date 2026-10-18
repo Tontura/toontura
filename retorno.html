@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ToonTura</title>
+<link rel="icon" type="image/png" href="img/icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=Bebas+Neue&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header><div class="wrap nav">
+  <a href="index.html"><img src="img/logo.png" alt="ToonTura"></a>
+  <nav class="navlinks"><a href="index.html#colecao">Loja</a><a class="cart-link" href="carrinho.html">Carrinho <span id="contador">0</span></a></nav>
+</div></header>
+<main class="wrap page" style="max-width:640px;text-align:center">
+  <h1 id="titulo"></h1><p id="texto" style="margin:14px 0 24px"></p>
+  <div id="whats-box"></div>
+  <a class="btn ghost" href="index.html">Voltar à loja</a>
+</main>
+<script src="loja.js"></script>
+<script>
+const q = new URLSearchParams(location.search);
+const s = q.get('status') || q.get('collection_status');
+const m = {
+  approved:['Pagamento aprovado!','Obrigado pela compra. Você receberá os detalhes por e-mail.'],
+  pending:['Pagamento pendente','Assim que for confirmado, avisaremos você.'],
+  in_process:['Pagamento em análise','Assim que for confirmado, avisaremos você.'],
+  erro:['Pagamento não concluído','Nada foi cobrado. Você pode tentar de novo pelo carrinho.']
+};
+const [t,x] = m[s] || m.erro;
+document.getElementById('titulo').textContent = t;
+document.getElementById('texto').textContent = x;
+if (s==='approved') { localStorage.removeItem('carrinho'); atualizaContador(); }
+
+let ped = null; try { ped = JSON.parse(localStorage.getItem('ultimoPedido')||'null'); } catch(e){}
+if (['approved','pending','in_process'].includes(s) && ped && ped.tipo==='retirada' && ped.whatsapp){
+  const texto = ped.combinar
+    ? `Olá! Comprei na ToonTura e quero combinar a entrega.\nNome: ${ped.nome}\nPedido: ${ped.resumo}\nMeu endereço/cidade: `
+    : `Olá! Comprei na ToonTura e quero combinar a retirada em ${ped.local}.\nNome: ${ped.nome}\nPedido: ${ped.resumo}`;
+  const a = document.createElement('a');
+  a.className = 'btn'; a.style.cssText = 'display:block;margin-bottom:12px';
+  a.href = 'https://wa.me/'+ped.whatsapp+'?text='+encodeURIComponent(texto);
+  a.target = '_blank'; a.rel = 'noopener';
+  a.textContent = ped.combinar ? 'Combinar entrega no WhatsApp' : 'Combinar retirada no WhatsApp';
+  document.getElementById('whats-box').appendChild(a);
+}
+</script>
+</body>
+</html>
