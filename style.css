@@ -586,6 +586,143 @@ footer{border-top:1px solid var(--line);padding:30px 0;color:var(--dim);font-siz
   margin-top: 4px;
 }
 
+/* Card Geral sem fundo branco e sem bordas arredondadas */
+.card-produto {
+  position: relative;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+/* Informações do Produto abaixo da imagem */
+.card-link-detalhes {
+  text-decoration: none;
+  color: #fff;
+  display: block;
+  padding: 10px 0 0 0;
+  background: transparent !important;
+}
+
+.card-link-detalhes h3 {
+  color: #fff;
+  font-size: 0.95rem;
+  margin: 0 0 4px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.card-link-detalhes .preco {
+  color: #e61c24; /* tom vermelho da marca */
+  font-weight: 800;
+  font-size: 0.9rem;
+}
+
+/* Wrapper da Imagem */
+.card-imagem-wrapper {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: #111;
+  border-radius: 0 !important;
+}
+
+.img-produto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 0 !important;
+}
+
+/* Retângulo Retrátil Mais Transparente */
+.retangulo-hover {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.65); /* Transparência ajustada */
+  backdrop-filter: blur(3px); /* Leve efeito de desfoque no fundo */
+  color: #fff;
+  padding: 10px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 10;
+  border-radius: 0 !important;
+  
+  transform: translateY(100%);
+  transition: transform 0.25s ease-out;
+}
+
+.card-produto.exibir-hover .retangulo-hover {
+  transform: translateY(0);
+}
+
+/* Linhas e botões de opções */
+.hover-linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hover-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #ddd;
+}
+
+.hover-opcoes {
+  display: flex;
+  gap: 4px;
+}
+
+/* Botões sem bordas arredondadas */
+.btn-opcao {
+  background: transparent;
+  border: 1px solid #777;
+  color: #fff;
+  font-size: 0.7rem;
+  padding: 3px 7px;
+  border-radius: 0 !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-opcao:hover {
+  border-color: #fff;
+}
+
+.btn-opcao.ativo {
+  background: #fff;
+  color: #000;
+  border-color: #fff;
+  font-weight: bold;
+}
+
+/* Botão de Adicionar ao Carrinho reto */
+.btn-add-carrinho {
+  width: 100%;
+  background: #fff;
+  color: #000;
+  border: none;
+  padding: 8px 0;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  cursor: pointer;
+  margin-top: 4px;
+  border-radius: 0 !important;
+  transition: background 0.2s ease;
+}
+
+.btn-add-carrinho:hover {
+  background: #ccc;
+}
 .btn-add-carrinho:hover {
   background: #e0e0e0;
 }
