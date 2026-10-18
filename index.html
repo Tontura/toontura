@@ -67,24 +67,27 @@
 <script src="produtos.js"></script>
 <script src="loja.js"></script>
 <script>
-function desenhar(cat){
-  const lista = PRODUTOS.filter(p => cat==='todos' || p.categoria===cat);
-  document.getElementById('grid').innerHTML = lista.map(p=>`
-    <a class="card reveal" href="produto.html?id=${p.id}">
-      <div class="foto">
-        ${p.categoria==='camisetas'?'<span class="tag">NOVA</span>':''}
-        ${p.imagens.slice(0,2).map(s=>`<img src="${s}" alt="${esc(p.nome)}" loading="lazy" onerror="this.style.visibility='hidden'">`).join('')}
-      </div>
-      <h3>${esc(p.nome)}</h3><div class="preco">${brl(p.preco)}</div>
-    </a>`).join('');
-  observarReveal();
+// Auxiliares de formatação de texto
+function esc(str) {
+  return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
-document.getElementById('chips').addEventListener('click',e=>{
-  const b = e.target.closest('button'); if (!b) return;
-  document.querySelectorAll('#chips button').forEach(x=>x.classList.remove('ativo'));
-  b.classList.add('ativo'); desenhar(b.dataset.cat);
+function brl(v) {
+  return 'R$ ' + Number(v).toFixed(2).replace('.', ',');
+}
+
+// Filtro por categorias nos botões/chips
+document.getElementById('chips').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  document.querySelectorAll('#chips button').forEach(x => x.classList.remove('ativo'));
+  b.classList.add('ativo');
+  renderizarProdutos(b.dataset.cat);
 });
-desenhar('todos');
+
+// Renderização inicial
+renderizarProdutos('todos');
+
+// Busca link do WhatsApp
 fetch('/api/pontos').then(r=>r.json()).then(d=>{
   if (d.whatsapp) document.getElementById('whats').href = 'https://wa.me/'+d.whatsapp+'?text='+encodeURIComponent('Olá! Vim pelo site da ToonTura.');
 }).catch(()=>{});
