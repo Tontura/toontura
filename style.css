@@ -726,3 +726,176 @@ footer{border-top:1px solid var(--line);padding:30px 0;color:var(--dim);font-siz
 .btn-add-carrinho:hover {
   background: #e0e0e0;
 }
+
+/* Container Principal da Gaveta Lateral */
+#carrinho-gaveta {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+#carrinho-gaveta.ativa {
+  pointer-events: auto;
+  opacity: 1;
+}
+
+/* Fundo Escurecido */
+.gaveta-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(2px);
+}
+
+/* Painel Lateral Preto Reto */
+.gaveta-conteudo {
+  position: relative;
+  width: 380px;
+  max-width: 85vw;
+  height: 100%;
+  background: #0d0d0d;
+  border-left: 1px solid #222;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  z-index: 2;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+#carrinho-gaveta.ativa .gaveta-conteudo {
+  transform: translateX(0);
+}
+
+/* Header da Gaveta */
+.gaveta-header {
+  padding: 20px;
+  border-bottom: 1px solid #222;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gaveta-header h2 {
+  font-size: 1.1rem;
+  margin: 0;
+  letter-spacing: 1px;
+}
+
+.btn-fechar-gaveta {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+/* Lista de Itens */
+.gaveta-itens {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.carrinho-vazio-msg {
+  color: #777;
+  font-size: 0.9rem;
+  text-align: center;
+  margin-top: 40px;
+}
+
+.gaveta-item {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: #141414;
+  padding: 10px;
+  border: 1px solid #222;
+}
+
+.gaveta-item img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+}
+
+.gaveta-item-info {
+  flex: 1;
+}
+
+.gaveta-item-info h4 {
+  margin: 0 0 4px 0;
+  font-size: 0.85rem;
+  color: #fff;
+}
+
+.gaveta-item-info p {
+  margin: 0;
+  font-size: 0.7rem;
+  color: #888;
+}
+
+.gaveta-item-preco {
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #e61c24;
+  margin-top: 4px;
+}
+
+.gaveta-remover-btn {
+  background: transparent;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.gaveta-remover-btn:hover {
+  color: #e61c24;
+}
+
+/* Rodapé com Total e Botão */
+.gaveta-footer {
+  padding: 20px;
+  border-top: 1px solid #222;
+  background: #090909;
+}
+
+.gaveta-total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1rem;
+  margin-bottom: 16px;
+}
+
+.btn-finalizar-gaveta {
+  display: block;
+  width: 100%;
+  background: #fff;
+  color: #000;
+  text-align: center;
+  padding: 12px 0;
+  font-weight: 800;
+  text-decoration: none;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  transition: background 0.2s ease;
+}
+
+.btn-finalizar-gaveta:hover {
+  background: #ccc;
+}
