@@ -127,3 +127,119 @@ footer{border-top:1px solid var(--line);padding:30px 0;color:var(--dim);font-siz
 .reveal.on{opacity:1;transform:none}
 
 @media(max-width:760px){.detalhe{grid-template-columns:1fr}.navlinks{gap:14px;font-size:17px}.navlinks .oculta-m{display:none}.stats b{font-size:56px}}
+
+/* Card Container */
+.card-produto {
+  position: relative;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-imagem-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: #f9f9f9;
+  overflow: hidden;
+}
+
+.img-produto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.3s ease;
+}
+
+/* Overlay que se revela quando a classe .hover-ativo é adicionada */
+.hover-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(4px);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  opacity: 0;
+  transform: translateY(100%);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+
+/* Quando o hover ultrapassa 1 segundo, .hover-ativo entra em cena */
+.card-produto.hover-ativo .hover-overlay {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Grupos de Opções */
+.hover-opcao-grupo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.hover-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #333;
+}
+
+.hover-botoes-tamanho,
+.hover-botoes-estampa {
+  display: flex;
+  gap: 4px;
+}
+
+/* Botões de Seleção */
+.btn-tam,
+.btn-est {
+  border: 1px solid #ccc;
+  background: #fff;
+  color: #111;
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-tam:hover,
+.btn-est:hover {
+  border-color: #000;
+}
+
+.btn-tam.ativo,
+.btn-est.ativo {
+  background: #000;
+  color: #fff;
+  border-color: #000;
+}
+
+/* Botão Adicionar ao Carrinho */
+.btn-add-carrinho-rapido {
+  width: 100%;
+  padding: 8px 12px;
+  background-color: #000;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.btn-add-carrinho-rapido:hover {
+  background-color: #333;
+}
