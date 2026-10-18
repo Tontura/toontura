@@ -11,7 +11,7 @@ function brl(v) {
   return 'R$ ' + Number(v || 0).toFixed(2).replace('.', ',');
 }
 
-// Renderização dos produtos na vitrine
+// Renderização dos produtos
 function renderizarProdutos(categoria = 'todos') {
   const container = document.getElementById('grid');
   if (!container || typeof PRODUTOS === 'undefined') return;
@@ -22,7 +22,6 @@ function renderizarProdutos(categoria = 'todos') {
     const imgPadrao = p.imagem || (p.imagens && p.imagens[0]) || '';
     const imgHover = (p.imagens && p.imagens[3]) ? p.imagens[3] : imgPadrao;
 
-    // Tamanhos
     const tamanhosHTML = p.tamanhos ? `
       <div class="hover-linha">
         <span class="hover-label">TAMANHO:</span>
@@ -34,7 +33,6 @@ function renderizarProdutos(categoria = 'todos') {
       </div>
     ` : '';
 
-    // Estampas
     const estampasHTML = p.estampas ? `
       <div class="hover-linha">
         <span class="hover-label">ESTAMPA:</span>
@@ -52,14 +50,13 @@ function renderizarProdutos(categoria = 'todos') {
            data-id="${p.id}"
            data-tamanho-selecionado="${p.tamanhos ? p.tamanhos[0] : ''}"
            data-estampa-selecionada="${p.estampas ? p.estampas[0] : ''}"
-           data-img-padrao="${imgPadrao}"
-           data-img-hover="${imgHover}">
+           onmouseenter="iniciarHoverCard(this, '${imgHover}')"
+           onmouseleave="cancelarHoverCard(this, '${imgPadrao}')">
         
         <div class="foto card-imagem-wrapper">
           ${p.categoria === 'camisetas' ? '<span class="tag">NOVA</span>' : ''}
           <img src="${imgPadrao}" id="img-${p.id}" alt="${esc(p.nome)}" class="img-produto" loading="lazy" />
           
-          <!-- Retângulo semi-transparente de opções -->
           <div class="retangulo-hover">
             ${tamanhosHTML}
             ${estampasHTML}
@@ -76,38 +73,33 @@ function renderizarProdutos(categoria = 'todos') {
       </div>
     `;
   }).join('');
-
-  configurarHoverEventos();
 }
 
-// Configuração robusta de Hover (usando pointer/mouse events sem interrupção pelos botões)
+// Timer do Hover (0.5s) com troca direta de imagem
 let timersHover = {};
 
-function configurarHoverEventos() {
-  document.querySelectorAll('.card-produto').forEach(card => {
-    const id = card.getAttribute('data-id');
-    const imgPadrao = card.getAttribute('data-img-padrao');
-    const imgHover = card.getAttribute('data-img-hover');
-    const imgEl = card.querySelector('.img-produto');
+function iniciarHoverCard(cardElement, imgHoverUrl) {
+  const id = cardElement.getAttribute('data-id');
+  clearTimeout(timersHover[id]);
 
-    card.addEventListener('mouseenter', () => {
-      clearTimeout(timersHover[id]);
-      timersHover[id] = setTimeout(() => {
-        card.classList.add('exibir-hover');
-        if (imgEl && imgHover) {
-          imgEl.src = imgHover;
-        }
-      }, 500); // 0,5 segundos
-    });
+  timersHover[id] = setTimeout(() => {
+    cardElement.classList.add("exibir-hover");
+    const imgEl = cardElement.querySelector(".img-produto");
+    if (imgEl && imgHoverUrl) {
+      imgEl.src = imgHoverUrl;
+    }
+  }, 500); // 0,5 segundos
+}
 
-    card.addEventListener('mouseleave', () => {
-      clearTimeout(timersHover[id]);
-      card.classList.remove('exibir-hover');
-      if (imgEl && imgPadrao) {
-        imgEl.src = imgPadrao;
-      }
-    });
-  });
+function cancelarHoverCard(cardElement, imgPadraoUrl) {
+  const id = cardElement.getAttribute('data-id');
+  clearTimeout(timersHover[id]);
+
+  cardElement.classList.remove("exibir-hover");
+  const imgEl = cardElement.querySelector(".img-produto");
+  if (imgEl && imgPadraoUrl) {
+    imgEl.src = imgPadraoUrl;
+  }
 }
 
 // Seleção de Tamanho e Estampa
@@ -128,7 +120,7 @@ function selecionarOpcao(event, prodId, tipo, valor) {
   }
 }
 
-// Adicionar direto ao carrinho com persistência garantida no localStorage
+// Adicionar ao carrinho e abrir gaveta lateral
 function adicionarDiretoCarrinho(event, prodId) {
   event.stopPropagation();
   event.preventDefault();
@@ -138,66 +130,4 @@ function adicionarDiretoCarrinho(event, prodId) {
 
   const tamanho = card.getAttribute('data-tamanho-selecionado');
   const estampa = card.getAttribute('data-estampa-selecionada');
-
-  const produto = PRODUTOS.find(p => p.id === prodId);
-  if (!produto) return;
-
-  const item = {
-    id: produto.id,
-    nome: produto.nome,
-    preco: produto.preco,
-    imagem: produto.imagem || (produto.imagens && produto.imagens[0]),
-    tamanho: tamanho,
-    estampa: estampa,
-    quantidade: 1
-  };
-
-  // Garante adição ao localStorage do carrinho
-  let carrinho = [];
-  try {
-    carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
-  } catch (e) {
-    carrinho = [];
-  }
-
-  // Verifica se já existe o mesmo produto com mesmo tamanho e mesma estampa
-  const indexExistente = carrinho.findIndex(i => 
-    i.id === item.id && i.tamanho === item.tamanho && i.estampa === item.estampa
-  );
-
-  if (indexExistente > -1) {
-    carrinho[indexExistente].quantidade += 1;
-  } else {
-    carrinho.push(item);
-  }
-
-  localStorage.setItem('carrinho', JSON.stringify(carrinho));
-
-  // Atualiza contador do header se a função existir
-  if (typeof atualizarContadorCarrinho === 'function') {
-    atualizarContadorCarrinho();
-  } else {
-    const contadorEl = document.getElementById('contador');
-    if (contadorEl) {
-      const totalItens = carrinho.reduce((acc, i) => acc + (i.quantidade || 1), 0);
-      contadorEl.textContent = totalItens;
-    }
-  }
-
-  // Feedback visual rápido no botão
-  const btn = event.currentTarget;
-  const textoOriginal = btn.textContent;
-  btn.textContent = 'ADICIONADO!';
-  btn.style.background = '#e61c24';
-  btn.style.color = '#fff';
-
-  setTimeout(() => {
-    btn.textContent = textoOriginal;
-    btn.style.background = '#fff';
-    btn.style.color = '#000';
-  }, 1200);
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  renderizarProdutos('todos');
-});
+  const produto = PRO
