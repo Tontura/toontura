@@ -1,9 +1,9 @@
-// Funções auxiliares para formatação de texto e preço
+// Auxiliares de segurança e formatação
 function esc(str) {
   return String(str || '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
+    .replace(/$/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
 
@@ -11,10 +11,15 @@ function brl(v) {
   return 'R$ ' + Number(v || 0).toFixed(2).replace('.', ',');
 }
 
-// Renderização dos cards na vitrine da ToonTura
+// Renderização principal
 function renderizarProdutos(categoria = 'todos') {
   const container = document.getElementById('grid');
-  if (!container || typeof PRODUTOS === 'undefined') return;
+  if (!container) return;
+
+  if (typeof PRODUTOS === 'undefined' || !Array.isArray(PRODUTOS)) {
+    console.error("A variável PRODUTOS não está carregada. Verifique se produtos.js foi importado antes do loja.js.");
+    return;
+  }
 
   const lista = PRODUTOS.filter(p => categoria === 'todos' || p.categoria === categoria);
 
@@ -47,7 +52,7 @@ function renderizarProdutos(categoria = 'todos') {
     ` : '';
 
     return `
-      <div class="card card-produto reveal" 
+      <div class="card card-produto visible" 
            id="card-${p.id}"
            data-id="${p.id}"
            data-tamanho-selecionado="${p.tamanhos ? p.tamanhos[0] : ''}"
@@ -59,7 +64,7 @@ function renderizarProdutos(categoria = 'todos') {
           ${p.categoria === 'camisetas' ? '<span class="tag">NOVA</span>' : ''}
           <img src="${imgPadrao}" id="img-${p.id}" alt="${esc(p.nome)}" class="img-produto" loading="lazy" />
           
-          <!-- Retângulo que sobe de baixo dentro da imagem -->
+          <!-- Retângulo com opções no Hover -->
           <div class="retangulo-hover">
             ${tamanhosHTML}
             ${estampasHTML}
@@ -82,7 +87,7 @@ function renderizarProdutos(categoria = 'todos') {
   }
 }
 
-// Timer de 1 segundo para trocar a imagem e subir o retângulo
+// Timer de 1 segundo para o Hover
 let timerHover = null;
 
 function iniciarHoverCard(cardElement, imgHoverUrl) {
@@ -104,7 +109,7 @@ function cancelarHoverCard(cardElement, imgPadraoUrl) {
   }
 }
 
-// Seleção de tamanho e estampa diretamente no card
+// Seleção de Tamanho e Estampa
 function selecionarOpcao(event, prodId, tipo, valor) {
   event.stopPropagation();
   event.preventDefault();
@@ -122,7 +127,7 @@ function selecionarOpcao(event, prodId, tipo, valor) {
   }
 }
 
-// Adicionar produto direto ao carrinho
+// Adicionar direto ao carrinho
 function adicionarDiretoCarrinho(event, prodId) {
   event.stopPropagation();
   event.preventDefault();
@@ -146,6 +151,11 @@ function adicionarDiretoCarrinho(event, prodId) {
   if (typeof adicionarAoCarrinho === 'function') {
     adicionarAoCarrinho(item);
   } else {
-    console.log("Adicionado ao carrinho:", item);
+    console.log("Item adicionado ao carrinho:", item);
   }
 }
+
+// Garante a execução assim que a página estiver pronta
+document.addEventListener("DOMContentLoaded", () => {
+  renderizarProdutos('todos');
+});
