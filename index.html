@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ToonTura — Nova coleção</title>
+<meta name="description" content="ToonTura: camisetas, chinelo e ecobag. Vício na tecnologia, sair das redes, distopia e incertezas.">
+<link rel="icon" type="image/png" href="img/icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=Bebas+Neue&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="marquee"><div>TOONTURA ◆ NOVA COLEÇÃO ◆ SAIA DAS REDES ◆ TOONTURA ◆ NOVA COLEÇÃO ◆ SAIA DAS REDES ◆ TOONTURA ◆ NOVA COLEÇÃO ◆ SAIA DAS REDES ◆ TOONTURA ◆ NOVA COLEÇÃO ◆ SAIA DAS REDES ◆</div></div>
+<header><div class="wrap nav">
+  <a href="index.html"><img src="img/logo.png" alt="ToonTura"></a>
+  <nav class="navlinks">
+    <a href="#colecao" class="oculta-m">Coleção</a>
+    <a href="#tema" class="oculta-m">Tema</a>
+    <a href="#contato" class="oculta-m">Contato</a>
+    <a class="cart-link" href="carrinho.html">Carrinho <span id="contador">0</span></a>
+  </nav>
+</div></header>
+
+<section class="hero">
+  <img src="img/logo.png" alt="ToonTura">
+  <div class="sub">NOVA COLEÇÃO</div>
+  <p>Vício na tecnologia, sair das redes, distopia e incertezas. Estampas pra quem quer desconectar.</p>
+  <a class="btn" href="#colecao">Ver coleção</a>
+</section>
+<div class="rasgo"></div>
+
+<section class="papel" id="tema"><div class="wrap">
+  <h2 class="reveal">A coleção</h2>
+  <div class="stats reveal">
+    <div><b>5</b><span>estampas de camiseta<br>frente e costas</span></div>
+    <div><b>2</b><span>opções de cor<br>preto e branco oversized</span></div>
+    <div><b>2</b><span>personalizações<br>sob consulta</span></div>
+  </div>
+  <div class="temas reveal"><span>Vício na tecnologia</span><span>Sair das redes</span><span>Distopia e incertezas</span></div>
+</div></section>
+
+<section class="sec" id="colecao"><div class="wrap">
+  <h2 class="reveal">Escolha a sua</h2>
+  <div class="chips" id="chips">
+    <button class="ativo" data-cat="todos">Todos</button>
+    <button data-cat="camisetas">Camisetas</button>
+    <button data-cat="acessorios">Chinelo e ecobag</button>
+  </div>
+  <div class="grid" id="grid"></div>
+</div></section>
+
+<div class="arame"></div>
+<section class="brinde reveal">
+  <b>Os primeiros 10 pedidos levam adesivos!</b>
+  <span>Brindes para quem chegou primeiro.</span>
+</section>
+
+<section class="sec" id="contato"><div class="wrap" style="text-align:center">
+  <h2 class="reveal">Fala com a gente</h2>
+  <p class="reveal" style="margin:10px 0 20px;color:var(--dim)">Dúvidas, personalização ou entrega combinada.</p>
+  <a class="btn reveal" id="whats" href="#">Chamar no WhatsApp</a>
+</div></section>
+
+<footer><div class="wrap foot-row">
+  <img src="img/logo.png" alt="ToonTura"><div>© 2026 ToonTura. Muito obrigado!</div>
+</div></footer>
+
+<script src="produtos.js"></script>
+<script src="loja.js"></script>
+<script>
+function desenhar(cat){
+  const lista = PRODUTOS.filter(p => cat==='todos' || p.categoria===cat);
+  document.getElementById('grid').innerHTML = lista.map(p=>`
+    <a class="card reveal" href="produto.html?id=${p.id}">
+      <div class="foto">
+        ${p.categoria==='camisetas'?'<span class="tag">NOVA</span>':''}
+        ${p.imagens.slice(0,2).map(s=>`<img src="${s}" alt="${esc(p.nome)}" loading="lazy" onerror="this.style.visibility='hidden'">`).join('')}
+      </div>
+      <h3>${esc(p.nome)}</h3><div class="preco">${brl(p.preco)}</div>
+    </a>`).join('');
+  observarReveal();
+}
+document.getElementById('chips').addEventListener('click',e=>{
+  const b = e.target.closest('button'); if (!b) return;
+  document.querySelectorAll('#chips button').forEach(x=>x.classList.remove('ativo'));
+  b.classList.add('ativo'); desenhar(b.dataset.cat);
+});
+desenhar('todos');
+fetch('/api/pontos').then(r=>r.json()).then(d=>{
+  if (d.whatsapp) document.getElementById('whats').href = 'https://wa.me/'+d.whatsapp+'?text='+encodeURIComponent('Olá! Vim pelo site da ToonTura.');
+}).catch(()=>{});
+</script>
+</body>
+</html>
