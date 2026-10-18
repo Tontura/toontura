@@ -243,3 +243,129 @@ footer{border-top:1px solid var(--line);padding:30px 0;color:var(--dim);font-siz
 .btn-add-carrinho-rapido:hover {
   background-color: #333;
 }
+
+/* Container do Card */
+.card-produto {
+  position: relative;
+  width: 100%;
+  background: #fff;
+  cursor: pointer;
+}
+
+/* Container relativo da imagem com overflow hidden */
+.card-imagem-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden; /* Oculta o retângulo enquanto estiver fora */
+  background: #f4f4f4;
+}
+
+.img-produto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: opacity 0.2s ease;
+}
+
+/* Retângulo escuro semi-transparente que sobe de baixo */
+.retangulo-hover {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.88);
+  color: #fff;
+  padding: 12px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  
+  /* Escondido 100% para baixo */
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Ao completar 1 segundo de hover, sobe o retângulo */
+.card-produto.exibir-hover .retangulo-hover {
+  transform: translateY(0);
+}
+
+/* Linhas dos botões */
+.hover-linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hover-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #ccc;
+}
+
+.hover-opcoes {
+  display: flex;
+  gap: 4px;
+}
+
+/* Botões de Tamanho/Estampa */
+.btn-opcao {
+  background: transparent;
+  border: 1px solid #666;
+  color: #fff;
+  font-size: 0.75rem;
+  padding: 3px 7px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-opcao:hover {
+  border-color: #fff;
+}
+
+.btn-opcao.ativo {
+  background: #fff;
+  color: #000;
+  border-color: #fff;
+  font-weight: bold;
+}
+
+/* Botão de Adicionar ao Carrinho */
+.btn-add-carrinho {
+  width: 100%;
+  background: #fff;
+  color: #000;
+  border: none;
+  padding: 8px 0;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: background 0.2s ease;
+}
+
+.btn-add-carrinho:hover {
+  background: #e6e6e6;
+}
+
+/* Info do produto abaixo do card */
+.card-info {
+  padding: 10px 0;
+}
+
+.produto-titulo {
+  font-size: 0.9rem;
+  margin: 0 0 4px 0;
+}
+
+.produto-preco {
+  font-size: 0.85rem;
+  font-weight: bold;
+  margin: 0;
+}
