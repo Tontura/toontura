@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carrinho | ToonTura</title>
+<link rel="icon" type="image/png" href="img/icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=Bebas+Neue&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header><div class="wrap nav">
+  <a href="index.html"><img src="img/logo.png" alt="ToonTura"></a>
+  <nav class="navlinks">
+    <a href="index.html#colecao">Loja</a>
+    <a class="cart-link" href="carrinho.html">Carrinho <span id="contador">0</span></a>
+  </nav>
+</div></header>
+
+<main class="wrap page">
+  <h1>Carrinho</h1>
+  <div id="itens"></div>
+
+  <div class="dados">
+    <h3>Seus dados</h3>
+    <input type="text" id="c-nome" placeholder="Nome completo" autocomplete="name">
+    <input type="email" id="c-email" placeholder="E-mail" autocomplete="email">
+    <input type="text" id="c-whats" placeholder="WhatsApp com DDD, ex: 35 99999-9999" inputmode="numeric">
+
+    <h3>Como você quer receber?</h3>
+    <div class="opcoes-entrega">
+      <label class="opcao-box"><input type="radio" name="modo" value="envio" checked> Receber em casa<small>Frete calculado pelo seu CEP</small></label>
+      <label class="opcao-box"><input type="radio" name="modo" value="retirada"> Retirar em mãos ou combinar<small>Grátis em São José dos Campos, São Paulo ou Lavras. Ou combine outro local pelo WhatsApp</small></label>
+    </div>
+
+    <div id="painel-envio">
+      <input type="text" id="c-cep" placeholder="CEP" maxlength="9" inputmode="numeric">
+      <input type="text" id="c-rua" placeholder="Rua">
+      <div class="linha"><input type="text" id="c-numero" placeholder="Número"><input type="text" id="c-comp" placeholder="Complemento"></div>
+      <input type="text" id="c-bairro" placeholder="Bairro">
+      <div class="linha"><input type="text" id="c-cidade" placeholder="Cidade"><input type="text" id="c-uf" placeholder="UF" maxlength="2"></div>
+      <div id="fretes">Informe o CEP para ver as opções de frete.</div>
+    </div>
+    <div id="painel-retirada" hidden><div id="pontos">Carregando opções...</div></div>
+  </div>
+
+  <div class="total"><span>Total</span><span id="total">R$ 0,00</span></div>
+  <button class="btn" id="pagar">Pagar com Mercado Pago</button>
+  <p id="msg"></p>
+</main>
+
+<footer><div class="wrap foot-row"><img src="img/logo.png" alt="ToonTura"><div>© 2026 ToonTura</div></div></footer>
+
+<script src="produtos.js"></script>
+<script src="loja.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+let subtotal = 0, modo = 'envio', freteSel = null, pontoSel = null, pontosLista = [], whatsappLoja = '';
+
+const valorEntrega = () => modo==='retirada' ? 0 : (freteSel ? freteSel.preco : 0);
+const atualizarTotal = () => { $('total').textContent = brl(subtotal + valorEntrega()); };
+
+function resumoDoCarrinho(){
+  return lerCarrinho().map(i=>{
+    const det = [i.tamanho,i.cor,i.estampa].filter(Boolean).join('/');
+    return `${qtdItem(i)}x ${i.nome}${det?' ('+det+')':''}`;
+  }).join(', ');
+}
+
+function render(){
+  const c = lerCarrinho(); subtotal = 0;
+  if (!c.length){ $('itens').innerHTML = '<p>Seu carrinho está vazio.</p>'; $('pagar').disabled = true; atualizarTotal(); atualizaContador(); return; }
+  $('itens').innerHTML = c.map((i,idx)=>{
+    const q = qtdItem(i); subtotal += Number(i.preco)*q;
+    const det = [`Tam. ${i.tamanho||'Único'}`, i.estampa?`Estampa: ${i.estampa}`:null, i.cor?`Cor: ${i.cor}`:null, `${q}x`, brl(i.preco)].filter(Boolean).join(' · ');
+    return `<div class="item"><img src="${esc(i.imagem)}" alt=""><div><strong>${esc(i.nome)}</strong><br>${det}</div><button onclick="remover(${idx})">Remover</button></div>`;
+  }).join('');
+  $('pagar').disabled = false; atualizarTotal(); atualizaContador();
+}
+function remover(idx){ const c = lerCarrinho(); c.splice(idx,1); gravarCarrinho(c); render(); calcularFrete(); }
+
+async function calcularFrete(){
+  const cep = $('c-cep').value.replace(/\D/g,''), box = $('fretes');
+  freteSel = null; atualizarTotal();
+  if (cep.length!==8 || !lerCarrinho().length) return;
+  box.textContent = 'Calculando frete...';
+  try {
+    const itens = lerCarrinho().map(i=>({id:i.id,qtd:qtdItem(i)}));
+    const r = await fetch('/api/frete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cep,itens})});
+    const d = await r.json();
+    if (!r.ok || !d.opcoes || !d.opcoes.length){ box.textContent = d.erro || 'Nenhuma opção de frete para este CEP.'; return; }
+    box.innerHTML = d.opcoes.map((o,i)=>`<label class="opcao-box"><input type="radio" name="frete" value="${i}"> ${esc(o.nome)}: ${brl(o.preco)}<small>${o.prazo?o.prazo+' dias úteis':''}</small></label>`).join('');
+    box.querySelectorAll('input').forEach(el=>el.onchange=()=>{ freteSel = d.opcoes[Number(el.value)]; atualizarTotal(); });
+  } catch(e){ box.textContent = 'Erro ao calcular o frete.'; }
+}
+
+document.querySelectorAll('input[name=modo]').forEach(el=>el.onchange=()=>{
+  modo = el.value; $('painel-envio').hidden = modo!=='envio'; $('painel-retirada').hidden = modo!=='retirada'; atualizarTotal();
+});
+
+$('c-cep').addEventListener('blur', async ()=>{
+  const cep = $('c-cep').value.replace(/\D/g,''); if (cep.length!==8) return;
+  try {
+    const d = await (await fetch(`https://viacep.com.br/ws/${cep}/json/`)).json();
+    if (!d.erro){ $('c-rua').value = d.logradouro; $('c-bairro').value = d.bairro; $('c-cidade').value = d.localidade; $('c-uf').value = d.uf; }
+  } catch(e){}
+  calcularFrete();
+});
+
+fetch('/api/pontos',{cache:'no-store'}).then(r=>r.json()).then(d=>{
+  pontosLista = d.pontos||[]; whatsappLoja = d.whatsapp||'';
+  $('pontos').innerHTML = pontosLista.map(p=>`<label class="opcao-box"><input type="radio" name="ponto" value="${p.id}"> ${esc(p.nome)}<small>${esc(p.detalhe||'')}</small></label>`).join('');
+  document.querySelectorAll('input[name=ponto]').forEach(el=>el.onchange=()=>{ pontoSel = el.value; });
+}).catch(()=>{ $('pontos').textContent = 'Não foi possível carregar as opções de retirada.'; });
+
+$('pagar').onclick = async ()=>{
+  const btn = $('pagar'), msg = $('msg'), v = id => $(id).value.trim();
+  const cliente = { nome:v('c-nome'), email:v('c-email'), whatsapp:v('c-whats'), cep:v('c-cep'), rua:v('c-rua'), numero:v('c-numero'),
+    complemento:v('c-comp'), bairro:v('c-bairro'), cidade:v('c-cidade'), uf:v('c-uf').toUpperCase() };
+
+  if (!cliente.nome || !cliente.email || cliente.whatsapp.replace(/\D/g,'').length<10){ msg.textContent = 'Preencha nome, e-mail e WhatsApp com DDD.'; return; }
+  if (modo==='envio'){
+    if (cliente.cep.replace(/\D/g,'').length!==8 || !cliente.rua || !cliente.numero || cliente.uf.length!==2){ msg.textContent = 'Preencha o endereço de entrega completo.'; return; }
+    if (!freteSel){ msg.textContent = 'Escolha uma opção de frete.'; return; }
+  } else if (!pontoSel){ msg.textContent = 'Escolha um local de retirada ou a opção de combinar.'; return; }
+
+  btn.disabled = true; btn.textContent = 'Aguarde...'; msg.textContent = '';
+  try {
+    const itens = lerCarrinho().map(i=>({id:i.id,qtd:qtdItem(i),tamanho:i.tamanho||'Único',estampa:i.estampa||null,cor:i.cor||null}));
+    const r = await fetch('/api/criar-pagamento',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({itens,cliente,entrega: modo==='retirada' ? {tipo:'retirada',pontoId:pontoSel} : {tipo:'envio',freteId:freteSel.id}})});
+    const d = await r.json();
+    if (!r.ok || !d.url) throw new Error(d.erro || 'Erro interno ao processar pagamento');
+
+    const ponto = modo==='retirada' ? pontosLista.find(p=>p.id===pontoSel) : null;
+    localStorage.setItem('ultimoPedido', JSON.stringify({nome:cliente.nome,tipo:modo,local:ponto?ponto.nome:'',combinar:!!(ponto&&ponto.combinar),resumo:resumoDoCarrinho(),whatsapp:whatsappLoja}));
+    location.href = d.url;   // abre o site do Mercado Pago
+  } catch(e){ msg.textContent = 'Erro: '+e.message; btn.disabled = false; btn.textContent = 'Pagar com Mercado Pago'; }
+};
+render();
+</script>
+</body>
+</html>
