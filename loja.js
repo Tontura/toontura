@@ -52,8 +52,8 @@ function renderizarProdutos(categoria = 'todos') {
            data-id="${p.id}"
            data-tamanho-selecionado="${p.tamanhos ? p.tamanhos[0] : ''}"
            data-estampa-selecionada="${p.estampas ? p.estampas[0] : ''}"
-           onmouseenter="iniciarHoverCard(this, '${imgHover}')" 
-           onmouseleave="cancelarHoverCard(this, '${imgPadrao}')">
+           data-img-padrao="${imgPadrao}"
+           data-img-hover="${imgHover}">
         
         <div class="foto card-imagem-wrapper">
           ${p.categoria === 'camisetas' ? '<span class="tag">NOVA</span>' : ''}
@@ -77,31 +77,37 @@ function renderizarProdutos(categoria = 'todos') {
     `;
   }).join('');
 
-  if (typeof observarReveal === 'function') {
-    observarReveal();
-  }
+  configurarHoverEventos();
 }
 
-// Timer de 0,5 segundos (500ms)
-let timerHover = null;
+// Configuração robusta de Hover (usando pointer/mouse events sem interrupção pelos botões)
+let timersHover = {};
 
-function iniciarHoverCard(cardElement, imgHoverUrl) {
-  timerHover = setTimeout(() => {
-    cardElement.classList.add("exibir-hover");
-    const imgEl = cardElement.querySelector(".img-produto");
-    if (imgEl && imgHoverUrl) {
-      imgEl.src = imgHoverUrl;
-    }
-  }, 200); // 500ms = 0,5s
-}
+function configurarHoverEventos() {
+  document.querySelectorAll('.card-produto').forEach(card => {
+    const id = card.getAttribute('data-id');
+    const imgPadrao = card.getAttribute('data-img-padrao');
+    const imgHover = card.getAttribute('data-img-hover');
+    const imgEl = card.querySelector('.img-produto');
 
-function cancelarHoverCard(cardElement, imgPadraoUrl) {
-  clearTimeout(timerHover);
-  cardElement.classList.remove("exibir-hover");
-  const imgEl = cardElement.querySelector(".img-produto");
-  if (imgEl && imgPadraoUrl) {
-    imgEl.src = imgPadraoUrl;
-  }
+    card.addEventListener('mouseenter', () => {
+      clearTimeout(timersHover[id]);
+      timersHover[id] = setTimeout(() => {
+        card.classList.add('exibir-hover');
+        if (imgEl && imgHover) {
+          imgEl.src = imgHover;
+        }
+      }, 500); // 0,5 segundos
+    });
+
+    card.addEventListener('mouseleave', () => {
+      clearTimeout(timersHover[id]);
+      card.classList.remove('exibir-hover');
+      if (imgEl && imgPadrao) {
+        imgEl.src = imgPadrao;
+      }
+    });
+  });
 }
 
 // Seleção de Tamanho e Estampa
@@ -122,11 +128,14 @@ function selecionarOpcao(event, prodId, tipo, valor) {
   }
 }
 
-// Adicionar direto ao carrinho
+// Adicionar direto ao carrinho com persistência garantida no localStorage
 function adicionarDiretoCarrinho(event, prodId) {
   event.stopPropagation();
   event.preventDefault();
+
   const card = document.getElementById(`card-${prodId}`);
+  if (!card) return;
+
   const tamanho = card.getAttribute('data-tamanho-selecionado');
   const estampa = card.getAttribute('data-estampa-selecionada');
 
@@ -143,11 +152,50 @@ function adicionarDiretoCarrinho(event, prodId) {
     quantidade: 1
   };
 
-  if (typeof adicionarAoCarrinho === 'function') {
-    adicionarAoCarrinho(item);
-  } else {
-    console.log("Item adicionado:", item);
+  // Garante adição ao localStorage do carrinho
+  let carrinho = [];
+  try {
+    carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
+  } catch (e) {
+    carrinho = [];
   }
+
+  // Verifica se já existe o mesmo produto com mesmo tamanho e mesma estampa
+  const indexExistente = carrinho.findIndex(i => 
+    i.id === item.id && i.tamanho === item.tamanho && i.estampa === item.estampa
+  );
+
+  if (indexExistente > -1) {
+    carrinho[indexExistente].quantidade += 1;
+  } else {
+    carrinho.push(item);
+  }
+
+  localStorage.setItem('carrinho', JSON.stringify(carrinho));
+
+  // Atualiza contador do header se a função existir
+  if (typeof atualizarContadorCarrinho === 'function') {
+    atualizarContadorCarrinho();
+  } else {
+    const contadorEl = document.getElementById('contador');
+    if (contadorEl) {
+      const totalItens = carrinho.reduce((acc, i) => acc + (i.quantidade || 1), 0);
+      contadorEl.textContent = totalItens;
+    }
+  }
+
+  // Feedback visual rápido no botão
+  const btn = event.currentTarget;
+  const textoOriginal = btn.textContent;
+  btn.textContent = 'ADICIONADO!';
+  btn.style.background = '#e61c24';
+  btn.style.color = '#fff';
+
+  setTimeout(() => {
+    btn.textContent = textoOriginal;
+    btn.style.background = '#fff';
+    btn.style.color = '#000';
+  }, 1200);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
