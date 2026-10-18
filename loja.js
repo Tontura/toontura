@@ -1,17 +1,4 @@
-// Auxiliares de formatação
-function esc(str) {
-  return String(str || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-function brl(v) {
-  return 'R$ ' + Number(v || 0).toFixed(2).replace('.', ',');
-}
-
-// Renderização dos produtos na vitrine
+// Renderização dos cards na vitrine
 function renderizarProdutos(categoria = 'todos') {
   const container = document.getElementById('grid');
   if (!container || typeof PRODUTOS === 'undefined') return;
@@ -19,11 +6,11 @@ function renderizarProdutos(categoria = 'todos') {
   const lista = PRODUTOS.filter(p => categoria === 'todos' || p.categoria === categoria);
 
   container.innerHTML = lista.map(p => {
-    // Foto principal e 4ª foto (imagens[3] ou fallback para a 1ª)
+    // Imagem 1 (padrão) e Imagem 4 (hover)
     const imgPadrao = p.imagem || (p.imagens && p.imagens[0]) || '';
-    const imgHover = (p.imagens && p.imagens[3]) ? p.imagens[3] : imgPadrao;
+    const imgHover = (p.imagens && p.imagens[3]) ? p.imagens[3] : (p.imagens && p.imagens[1]) || imgPadrao;
 
-    // Tamanhos
+    // Opções de Tamanho
     const tamanhosHTML = p.tamanhos ? `
       <div class="hover-linha">
         <span class="hover-label">TAMANHO:</span>
@@ -35,7 +22,7 @@ function renderizarProdutos(categoria = 'todos') {
       </div>
     ` : '';
 
-    // Estampas
+    // Opções de Estampa
     const estampasHTML = p.estampas ? `
       <div class="hover-linha">
         <span class="hover-label">ESTAMPA:</span>
@@ -53,14 +40,14 @@ function renderizarProdutos(categoria = 'todos') {
            data-id="${p.id}"
            data-tamanho-selecionado="${p.tamanhos ? p.tamanhos[0] : ''}"
            data-estampa-selecionada="${p.estampas ? p.estampas[0] : ''}"
-           onmouseenter="iniciarHoverCard(this, '${imgHover}')"
+           onmouseenter="iniciarHoverCard(this, '${imgHover}')" 
            onmouseleave="cancelarHoverCard(this, '${imgPadrao}')">
         
         <div class="foto card-imagem-wrapper">
           ${p.categoria === 'camisetas' ? '<span class="tag">NOVA</span>' : ''}
           <img src="${imgPadrao}" id="img-${p.id}" alt="${esc(p.nome)}" class="img-produto" />
           
-          <!-- Retângulo com opções e botão de compra -->
+          <!-- Retângulo semi-transparente de opções -->
           <div class="retangulo-hover">
             ${tamanhosHTML}
             ${estampasHTML}
@@ -79,7 +66,7 @@ function renderizarProdutos(categoria = 'todos') {
   }).join('');
 }
 
-// Controle do timer de 0,5s no Hover
+// Timer do Hover (0,5 segundos)
 let timersHover = {};
 
 function iniciarHoverCard(cardElement, imgHoverUrl) {
@@ -92,7 +79,7 @@ function iniciarHoverCard(cardElement, imgHoverUrl) {
     if (imgEl && imgHoverUrl) {
       imgEl.src = imgHoverUrl;
     }
-  }, 500); // 0,5 segundos
+  }, 500); // 500ms = 0,5s
 }
 
 function cancelarHoverCard(cardElement, imgPadraoUrl) {
@@ -106,7 +93,7 @@ function cancelarHoverCard(cardElement, imgPadraoUrl) {
   }
 }
 
-// Seleção de Tamanho e Estampa no card
+// Seleção de tamanho e estampa diretamente no card
 function selecionarOpcao(event, prodId, tipo, valor) {
   event.stopPropagation();
   event.preventDefault();
@@ -124,7 +111,7 @@ function selecionarOpcao(event, prodId, tipo, valor) {
   }
 }
 
-// Adiciona ao carrinho e abre a gaveta lateral
+// Adicionar produto direto ao carrinho e abrir gaveta lateral
 function adicionarDiretoCarrinho(event, prodId) {
   event.stopPropagation();
   event.preventDefault();
@@ -134,6 +121,7 @@ function adicionarDiretoCarrinho(event, prodId) {
 
   const tamanho = card.getAttribute('data-tamanho-selecionado');
   const estampa = card.getAttribute('data-estampa-selecionada');
+
   const produto = PRODUTOS.find(p => p.id === prodId);
   if (!produto) return;
 
@@ -163,7 +151,6 @@ function adicionarDiretoCarrinho(event, prodId) {
 
   localStorage.setItem('carrinho', JSON.stringify(carrinho));
   atualizarContadorHeader();
-  renderizarGavetaCarrinho();
   abrirGavetaCarrinho();
 }
 
@@ -249,8 +236,7 @@ function atualizarContadorHeader() {
   if (contador) contador.textContent = total;
 }
 
-// Inicialização
+// Atualiza o contador assim que carrega a página
 document.addEventListener("DOMContentLoaded", () => {
-  renderizarProdutos('todos');
   atualizarContadorHeader();
 });
