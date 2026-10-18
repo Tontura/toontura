@@ -1,4 +1,4 @@
-// Renderização dos cards na vitrine
+// Renderização dos cards dos produtos
 function renderizarProdutos(categoria = 'todos') {
   const container = document.getElementById('grid');
   if (!container || typeof PRODUTOS === 'undefined') return;
@@ -6,11 +6,11 @@ function renderizarProdutos(categoria = 'todos') {
   const lista = PRODUTOS.filter(p => categoria === 'todos' || p.categoria === categoria);
 
   container.innerHTML = lista.map(p => {
-    // Imagem 1 (padrão) e Imagem 4 (hover)
+    // 1ª foto (padrão) e 4ª foto (hover) ou fallbacks caso tenha menos fotos
     const imgPadrao = p.imagem || (p.imagens && p.imagens[0]) || '';
     const imgHover = (p.imagens && p.imagens[3]) ? p.imagens[3] : (p.imagens && p.imagens[1]) || imgPadrao;
 
-    // Opções de Tamanho
+    // Tamanhos (se existirem no produto)
     const tamanhosHTML = p.tamanhos ? `
       <div class="hover-linha">
         <span class="hover-label">TAMANHO:</span>
@@ -22,7 +22,7 @@ function renderizarProdutos(categoria = 'todos') {
       </div>
     ` : '';
 
-    // Opções de Estampa
+    // Estampas (se existirem no produto)
     const estampasHTML = p.estampas ? `
       <div class="hover-linha">
         <span class="hover-label">ESTAMPA:</span>
@@ -47,12 +47,11 @@ function renderizarProdutos(categoria = 'todos') {
           ${p.categoria === 'camisetas' ? '<span class="tag">NOVA</span>' : ''}
           <img src="${imgPadrao}" id="img-${p.id}" alt="${esc(p.nome)}" class="img-produto" />
           
-          <!-- Retângulo semi-transparente de opções -->
           <div class="retangulo-hover">
             ${tamanhosHTML}
             ${estampasHTML}
             <button type="button" class="btn-add-carrinho" onclick="adicionarDiretoCarrinho(event, '${p.id}')">
-              ADICIONAR AO CARRINHO
+              🛒 ADICIONAR AO CARRINHO
             </button>
           </div>
         </div>
@@ -66,7 +65,7 @@ function renderizarProdutos(categoria = 'todos') {
   }).join('');
 }
 
-// Timer do Hover (0,5 segundos)
+// Timer do Hover (0,5s) com efeito Fade
 let timersHover = {};
 
 function iniciarHoverCard(cardElement, imgHoverUrl) {
@@ -76,10 +75,15 @@ function iniciarHoverCard(cardElement, imgHoverUrl) {
   timersHover[id] = setTimeout(() => {
     cardElement.classList.add("exibir-hover");
     const imgEl = cardElement.querySelector(".img-produto");
-    if (imgEl && imgHoverUrl) {
-      imgEl.src = imgHoverUrl;
+    
+    if (imgEl && imgHoverUrl && imgEl.src !== imgHoverUrl) {
+      imgEl.classList.add("trocando-imagem");
+      setTimeout(() => {
+        imgEl.src = imgHoverUrl;
+        imgEl.classList.remove("trocando-imagem");
+      }, 150);
     }
-  }, 500); // 500ms = 0,5s
+  }, 150); // 0.5s
 }
 
 function cancelarHoverCard(cardElement, imgPadraoUrl) {
@@ -88,8 +92,13 @@ function cancelarHoverCard(cardElement, imgPadraoUrl) {
 
   cardElement.classList.remove("exibir-hover");
   const imgEl = cardElement.querySelector(".img-produto");
+  
   if (imgEl && imgPadraoUrl) {
-    imgEl.src = imgPadraoUrl;
+    imgEl.classList.add("trocando-imagem");
+    setTimeout(() => {
+      imgEl.src = imgPadraoUrl;
+      imgEl.classList.remove("trocando-imagem");
+    }, 150);
   }
 }
 
@@ -111,17 +120,17 @@ function selecionarOpcao(event, prodId, tipo, valor) {
   }
 }
 
-// Adicionar produto direto ao carrinho e abrir gaveta lateral
+// Adicionar produto direto ao carrinho
 function adicionarDiretoCarrinho(event, prodId) {
   event.stopPropagation();
   event.preventDefault();
 
+  const btn = event.currentTarget;
   const card = document.getElementById(`card-${prodId}`);
   if (!card) return;
 
   const tamanho = card.getAttribute('data-tamanho-selecionado');
   const estampa = card.getAttribute('data-estampa-selecionada');
-
   const produto = PRODUTOS.find(p => p.id === prodId);
   if (!produto) return;
 
@@ -151,10 +160,22 @@ function adicionarDiretoCarrinho(event, prodId) {
 
   localStorage.setItem('carrinho', JSON.stringify(carrinho));
   atualizarContadorHeader();
-  abrirGavetaCarrinho();
+
+  // Feedback visual rápido no próprio botão antes de abrir a aba lateral
+  const textoOriginal = btn.innerHTML;
+  btn.innerHTML = '✓ ADICIONADO!';
+  btn.style.background = '#e61c24';
+  btn.style.color = '#fff';
+
+  setTimeout(() => {
+    btn.innerHTML = textoOriginal;
+    btn.style.background = '#fff';
+    btn.style.color = '#000';
+    abrirGavetaCarrinho();
+  }, 400);
 }
 
-// Gaveta do Carrinho em Aba Lateral
+// Gaveta Lateral do Carrinho (Slide-over sem Blur)
 function renderizarGavetaCarrinho() {
   let gaveta = document.getElementById('carrinho-gaveta');
   
@@ -236,7 +257,6 @@ function atualizarContadorHeader() {
   if (contador) contador.textContent = total;
 }
 
-// Atualiza o contador assim que carrega a página
 document.addEventListener("DOMContentLoaded", () => {
   atualizarContadorHeader();
 });
