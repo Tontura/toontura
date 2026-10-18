@@ -1,3 +1,16 @@
+// Funções auxiliares para formatação de texto e preço
+function esc(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function brl(v) {
+  return 'R$ ' + Number(v || 0).toFixed(2).replace('.', ',');
+}
+
 // Renderização dos cards na vitrine da ToonTura
 function renderizarProdutos(categoria = 'todos') {
   const container = document.getElementById('grid');
@@ -6,7 +19,7 @@ function renderizarProdutos(categoria = 'todos') {
   const lista = PRODUTOS.filter(p => categoria === 'todos' || p.categoria === categoria);
 
   container.innerHTML = lista.map(p => {
-    const imgPadrao = p.imagem || (p.imagens && p.imagens[0]);
+    const imgPadrao = p.imagem || (p.imagens && p.imagens[0]) || '';
     const imgHover = (p.imagens && p.imagens[3]) ? p.imagens[3] : imgPadrao;
 
     // Tamanhos
@@ -69,7 +82,7 @@ function renderizarProdutos(categoria = 'todos') {
   }
 }
 
-// Timer de 1 segundo para trocar imagem e subir o retângulo
+// Timer de 1 segundo para trocar a imagem e subir o retângulo
 let timerHover = null;
 
 function iniciarHoverCard(cardElement, imgHoverUrl) {
