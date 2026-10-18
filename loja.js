@@ -11,7 +11,7 @@ function brl(v) {
   return 'R$ ' + Number(v || 0).toFixed(2).replace('.', ',');
 }
 
-// Renderização dos produtos
+// Renderização dos produtos na vitrine
 function renderizarProdutos(categoria = 'todos') {
   const container = document.getElementById('grid');
   if (!container || typeof PRODUTOS === 'undefined') return;
@@ -19,9 +19,11 @@ function renderizarProdutos(categoria = 'todos') {
   const lista = PRODUTOS.filter(p => categoria === 'todos' || p.categoria === categoria);
 
   container.innerHTML = lista.map(p => {
+    // Foto principal e 4ª foto (imagens[3] ou fallback para a 1ª)
     const imgPadrao = p.imagem || (p.imagens && p.imagens[0]) || '';
     const imgHover = (p.imagens && p.imagens[3]) ? p.imagens[3] : imgPadrao;
 
+    // Tamanhos
     const tamanhosHTML = p.tamanhos ? `
       <div class="hover-linha">
         <span class="hover-label">TAMANHO:</span>
@@ -33,6 +35,7 @@ function renderizarProdutos(categoria = 'todos') {
       </div>
     ` : '';
 
+    // Estampas
     const estampasHTML = p.estampas ? `
       <div class="hover-linha">
         <span class="hover-label">ESTAMPA:</span>
@@ -55,8 +58,9 @@ function renderizarProdutos(categoria = 'todos') {
         
         <div class="foto card-imagem-wrapper">
           ${p.categoria === 'camisetas' ? '<span class="tag">NOVA</span>' : ''}
-          <img src="${imgPadrao}" id="img-${p.id}" alt="${esc(p.nome)}" class="img-produto" loading="lazy" />
+          <img src="${imgPadrao}" id="img-${p.id}" alt="${esc(p.nome)}" class="img-produto" />
           
+          <!-- Retângulo com opções e botão de compra -->
           <div class="retangulo-hover">
             ${tamanhosHTML}
             ${estampasHTML}
@@ -75,7 +79,7 @@ function renderizarProdutos(categoria = 'todos') {
   }).join('');
 }
 
-// Timer do Hover (0.5s) com troca direta de imagem
+// Controle do timer de 0,5s no Hover
 let timersHover = {};
 
 function iniciarHoverCard(cardElement, imgHoverUrl) {
@@ -102,7 +106,7 @@ function cancelarHoverCard(cardElement, imgPadraoUrl) {
   }
 }
 
-// Seleção de Tamanho e Estampa
+// Seleção de Tamanho e Estampa no card
 function selecionarOpcao(event, prodId, tipo, valor) {
   event.stopPropagation();
   event.preventDefault();
@@ -120,7 +124,7 @@ function selecionarOpcao(event, prodId, tipo, valor) {
   }
 }
 
-// Adicionar ao carrinho e abrir gaveta lateral
+// Adiciona ao carrinho e abre a gaveta lateral
 function adicionarDiretoCarrinho(event, prodId) {
   event.stopPropagation();
   event.preventDefault();
@@ -130,4 +134,123 @@ function adicionarDiretoCarrinho(event, prodId) {
 
   const tamanho = card.getAttribute('data-tamanho-selecionado');
   const estampa = card.getAttribute('data-estampa-selecionada');
-  const produto = PRO
+  const produto = PRODUTOS.find(p => p.id === prodId);
+  if (!produto) return;
+
+  const item = {
+    id: produto.id,
+    nome: produto.nome,
+    preco: produto.preco,
+    imagem: produto.imagem || (produto.imagens && produto.imagens[0]),
+    tamanho: tamanho,
+    estampa: estampa,
+    quantidade: 1
+  };
+
+  let carrinho = [];
+  try {
+    carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
+  } catch (e) {
+    carrinho = [];
+  }
+
+  const idx = carrinho.findIndex(i => i.id === item.id && i.tamanho === item.tamanho && i.estampa === item.estampa);
+  if (idx > -1) {
+    carrinho[idx].quantidade += 1;
+  } else {
+    carrinho.push(item);
+  }
+
+  localStorage.setItem('carrinho', JSON.stringify(carrinho));
+  atualizarContadorHeader();
+  renderizarGavetaCarrinho();
+  abrirGavetaCarrinho();
+}
+
+// Gaveta do Carrinho em Aba Lateral
+function renderizarGavetaCarrinho() {
+  let gaveta = document.getElementById('carrinho-gaveta');
+  
+  if (!gaveta) {
+    gaveta = document.createElement('div');
+    gaveta.id = 'carrinho-gaveta';
+    gaveta.innerHTML = `
+      <div class="gaveta-overlay" onclick="fecharGavetaCarrinho()"></div>
+      <div class="gaveta-conteudo">
+        <div class="gaveta-header">
+          <h2>CARRINHO</h2>
+          <button class="btn-fechar-gaveta" onclick="fecharGavetaCarrinho()">✕</button>
+        </div>
+        <div class="gaveta-itens" id="gaveta-itens"></div>
+        <div class="gaveta-footer">
+          <div class="gaveta-total">
+            <span>TOTAL:</span>
+            <strong id="gaveta-total-valor">R$ 0,00</strong>
+          </div>
+          <a href="carrinho.html" class="btn-finalizar-gaveta">FINALIZAR COMPRA</a>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(gaveta);
+  }
+
+  const containerItens = document.getElementById('gaveta-itens');
+  const containerTotal = document.getElementById('gaveta-total-valor');
+  let carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
+
+  if (carrinho.length === 0) {
+    containerItens.innerHTML = '<p class="carrinho-vazio-msg">Seu carrinho está vazio.</p>';
+    containerTotal.textContent = 'R$ 0,00';
+    return;
+  }
+
+  let total = 0;
+  containerItens.innerHTML = carrinho.map((item, index) => {
+    total += item.preco * item.quantidade;
+    return `
+      <div class="gaveta-item">
+        <img src="${item.imagem}" alt="${esc(item.nome)}" />
+        <div class="gaveta-item-info">
+          <h4>${esc(item.nome)}</h4>
+          <p>${item.tamanho ? 'Tamanho: ' + item.tamanho : ''} ${item.estampa ? '| Estampa: ' + item.estampa : ''}</p>
+          <div class="gaveta-item-preco">${item.quantidade}x ${brl(item.preco)}</div>
+        </div>
+        <button class="gaveta-remover-btn" onclick="removerItemGaveta(${index})">✕</button>
+      </div>
+    `;
+  }).join('');
+
+  containerTotal.textContent = brl(total);
+}
+
+function abrirGavetaCarrinho() {
+  renderizarGavetaCarrinho();
+  const gaveta = document.getElementById('carrinho-gaveta');
+  if (gaveta) gaveta.classList.add('ativa');
+}
+
+function fecharGavetaCarrinho() {
+  const gaveta = document.getElementById('carrinho-gaveta');
+  if (gaveta) gaveta.classList.remove('ativa');
+}
+
+function removerItemGaveta(index) {
+  let carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
+  carrinho.splice(index, 1);
+  localStorage.setItem('carrinho', JSON.stringify(carrinho));
+  atualizarContadorHeader();
+  renderizarGavetaCarrinho();
+}
+
+function atualizarContadorHeader() {
+  const carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
+  const total = carrinho.reduce((acc, item) => acc + (item.quantidade || 1), 0);
+  const contador = document.getElementById('contador');
+  if (contador) contador.textContent = total;
+}
+
+// Inicialização
+document.addEventListener("DOMContentLoaded", () => {
+  renderizarProdutos('todos');
+  atualizarContadorHeader();
+});
