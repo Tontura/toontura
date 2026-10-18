@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Produto | ToonTura</title>
+<link rel="icon" type="image/png" href="img/icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=Bebas+Neue&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header><div class="wrap nav">
+  <a href="index.html"><img src="img/logo.png" alt="ToonTura"></a>
+  <nav class="navlinks">
+    <a href="index.html#colecao">Loja</a>
+    <a class="cart-link" href="carrinho.html">Carrinho <span id="contador">0</span></a>
+  </nav>
+</div></header>
+
+<main class="wrap page"><div id="detalhe" class="detalhe"></div></main>
+<footer><div class="wrap foot-row"><img src="img/logo.png" alt="ToonTura"><div>© 2026 ToonTura</div></div></footer>
+
+<script src="produtos.js"></script>
+<script src="loja.js"></script>
+<script>
+const id = new URLSearchParams(location.search).get('id');
+const p = PRODUTOS.find(x=>x.id===id) || PRODUTOS[0];
+let tam = p.tamanhos[0];
+let cor = p.cores ? p.cores[0].nome : null;
+let est = p.estampas ? p.estampas[0] : null;
+let idx = 0;
+
+document.title = p.nome + ' | ToonTura';
+document.getElementById('detalhe').innerHTML = `
+  <div>
+    <div class="slider">
+      ${p.imagens.length>1?'<button class="seta prev" id="prev">❮</button><button class="seta next" id="next">❯</button>':''}
+      <div class="track" id="track">${p.imagens.map(s=>`<img src="${s}" alt="${esc(p.nome)}" onerror="this.style.visibility='hidden'">`).join('')}</div>
+    </div>
+    ${p.imagens.length>1?`<div class="mini" id="mini">${p.imagens.map((s,i)=>`<button class="${i?'':'ativo'}" onclick="foto(${i})"><img src="${s}" alt="" onerror="this.style.visibility='hidden'"></button>`).join('')}</div>`:''}
+  </div>
+  <div class="info">
+    <h1>${esc(p.nome)}</h1>
+    <div class="preco">${brl(p.preco)}</div>
+    <p class="desc">${esc(p.desc||'')}</p>
+    ${p.cores?`<div class="opc"><h4>Cor</h4><div id="g-cor">${p.cores.map((c,i)=>`<button class="${i?'':'ativo'}" onclick="pick('cor','${c.nome}',this)"><span class="sw" style="background:${c.hex}"></span>${c.nome}</button>`).join('')}</div></div>`:''}
+    ${p.estampas?`<div class="opc"><h4>Estampa</h4><div id="g-est">${p.estampas.map((e,i)=>`<button class="${i?'':'ativo'}" onclick="pick('est','${e}',this)">${e}</button>`).join('')}</div></div>`:''}
+    <div class="opc"><h4>Tamanho</h4><div id="g-tam">${p.tamanhos.map((t,i)=>`<button class="${i?'':'ativo'}" onclick="pick('tam','${t}',this)">${t}</button>`).join('')}</div></div>
+    <button class="btn" id="add">Adicionar ao carrinho</button>
+  </div>`;
+
+const track = document.getElementById('track');
+function foto(i){
+  const n = p.imagens.length; idx = (i+n)%n;
+  track.style.transform = `translateX(-${idx*100}%)`;
+  document.querySelectorAll('#mini button').forEach((b,k)=>b.classList.toggle('ativo',k===idx));
+}
+function pick(tipo,valor,btn){
+  if (tipo==='cor') cor = valor; else if (tipo==='est') { est = valor; if (p.imagens.length>1) foto(valor==='Costas'?1:0); } else tam = valor;
+  btn.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('ativo'));
+  btn.classList.add('ativo');
+}
+if (document.getElementById('prev')) {
+  document.getElementById('prev').onclick = ()=>foto(idx-1);
+  document.getElementById('next').onclick = ()=>foto(idx+1);
+}
+document.getElementById('add').onclick = ()=>{
+  addCarrinho(p, tam, cor, est);
+  voarParaCarrinho(track.children[idx]);
+  setTimeout(()=>abrirCarrinhoLateral('Produto adicionado ao carrinho'),900);
+};
+</script>
+</body>
+</html>
