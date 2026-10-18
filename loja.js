@@ -92,7 +92,7 @@ function iniciarHoverCard(cardElement, imgHoverUrl) {
     if (imgEl && imgHoverUrl) {
       imgEl.src = imgHoverUrl;
     }
-  }, 500); // 500ms = 0,5s
+  }, 200); // 500ms = 0,5s
 }
 
 function cancelarHoverCard(cardElement, imgPadraoUrl) {
