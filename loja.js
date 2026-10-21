@@ -1,4 +1,82 @@
-// Renderização dos cards dos produtos
+// ===== Auxiliares compartilhados por todas as páginas =====
+function esc(str) {
+  return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function brl(v) {
+  return 'R$ ' + Number(v).toFixed(2).replace('.', ',');
+}
+
+function lerCarrinho() {
+  try { return JSON.parse(localStorage.getItem('carrinho')) || []; }
+  catch (e) { return []; }
+}
+function gravarCarrinho(c) {
+  localStorage.setItem('carrinho', JSON.stringify(c));
+  atualizarContadorHeader();
+}
+function qtdItem(i) { return i.quantidade || i.qtd || 1; }
+function atualizaContador() { atualizarContadorHeader(); }
+
+function atualizarContadorHeader() {
+  const total = lerCarrinho().reduce((acc, item) => acc + qtdItem(item), 0);
+  const contador = document.getElementById('contador');
+  if (contador) contador.textContent = total;
+}
+
+// Usada pela página do produto
+function addCarrinho(p, tam, cor, est) {
+  const c = lerCarrinho();
+  const idx = c.findIndex(i =>
+    i.id === p.id &&
+    i.tamanho === tam &&
+    (i.cor || null) === (cor || null) &&
+    (i.estampa || null) === (est || null)
+  );
+  if (idx > -1) {
+    c[idx].quantidade = qtdItem(c[idx]) + 1;
+  } else {
+    c.push({
+      id: p.id,
+      nome: p.nome,
+      preco: p.preco,
+      imagem: p.imagem || (p.imagens && p.imagens[0]) || '',
+      tamanho: tam,
+      cor: cor || null,
+      estampa: est || null,
+      quantidade: 1
+    });
+  }
+  gravarCarrinho(c);
+}
+
+function abrirCarrinhoLateral() { abrirGavetaCarrinho(); }
+
+// Animação da foto "voando" até o carrinho
+function voarParaCarrinho(el) {
+  const alvo = document.querySelector('.cart-link');
+  if (!el || !alvo) return;
+  const a = el.getBoundingClientRect(), b = alvo.getBoundingClientRect();
+  const clone = el.cloneNode(true);
+  Object.assign(clone.style, {
+    position: 'fixed', left: a.left + 'px', top: a.top + 'px',
+    width: a.width + 'px', height: a.height + 'px', objectFit: 'cover',
+    zIndex: 10000, transition: 'all .8s ease-in-out', pointerEvents: 'none', margin: 0
+  });
+  document.body.appendChild(clone);
+  requestAnimationFrame(() => {
+    Object.assign(clone.style, {
+      left: b.left + 'px', top: b.top + 'px',
+      width: '20px', height: '20px', opacity: '.3'
+    });
+  });
+  setTimeout(() => {
+    clone.remove();
+    alvo.classList.add('bump');
+    setTimeout(() => alvo.classList.remove('bump'), 400);
+  }, 800);
+}
+
+// ===== Renderização dos cards dos produtos (página inicial) =====
 function renderizarProdutos(categoria = 'todos') {
   const container = document.getElementById('grid');
   if (!container || typeof PRODUTOS === 'undefined') return;
@@ -10,7 +88,6 @@ function renderizarProdutos(categoria = 'todos') {
     const imgPadrao = p.imagem || (p.imagens && p.imagens[0]) || '';
     const imgHover = (p.imagens && p.imagens[3]) ? p.imagens[3] : (p.imagens && p.imagens[1]) || imgPadrao;
 
-    // Tamanhos (se existirem no produto)
     const tamanhosHTML = p.tamanhos ? `
       <div class="hover-linha">
         <span class="hover-label">TAMANHO:</span>
@@ -22,7 +99,6 @@ function renderizarProdutos(categoria = 'todos') {
       </div>
     ` : '';
 
-    // Estampas (se existirem no produto)
     const estampasHTML = p.estampas ? `
       <div class="hover-linha">
         <span class="hover-label">ESTAMPA:</span>
@@ -35,18 +111,22 @@ function renderizarProdutos(categoria = 'todos') {
     ` : '';
 
     return `
-      <div class="card card-produto" 
+      <div class="card card-produto"
            id="card-${p.id}"
            data-id="${p.id}"
            data-tamanho-selecionado="${p.tamanhos ? p.tamanhos[0] : ''}"
            data-estampa-selecionada="${p.estampas ? p.estampas[0] : ''}"
-           onmouseenter="iniciarHoverCard(this, '${imgHover}')" 
+           onmouseenter="iniciarHoverCard(this, '${imgHover}')"
            onmouseleave="cancelarHoverCard(this, '${imgPadrao}')">
-        
+
         <div class="foto card-imagem-wrapper">
           ${p.categoria === 'camisetas' ? '<span class="tag">NOVA</span>' : ''}
-          <img src="${imgPadrao}" id="img-${p.id}" alt="${esc(p.nome)}" class="img-produto" />
-          
+
+          <!-- FOTO CLICÁVEL: leva para a página do produto -->
+          <a href="produto.html?id=${p.id}" class="card-img-link">
+            <img src="${imgPadrao}" id="img-${p.id}" alt="${esc(p.nome)}" class="img-produto" />
+          </a>
+
           <div class="retangulo-hover">
             ${tamanhosHTML}
             ${estampasHTML}
@@ -65,7 +145,7 @@ function renderizarProdutos(categoria = 'todos') {
   }).join('');
 }
 
-// Timer do Hover (0,5s) com efeito Fade
+// Hover do card: mostra o retângulo e troca a foto com fade
 let timersHover = {};
 
 function iniciarHoverCard(cardElement, imgHoverUrl) {
@@ -73,31 +153,31 @@ function iniciarHoverCard(cardElement, imgHoverUrl) {
   clearTimeout(timersHover[id]);
 
   timersHover[id] = setTimeout(() => {
-    cardElement.classList.add("exibir-hover");
-    const imgEl = cardElement.querySelector(".img-produto");
-    
-    if (imgEl && imgHoverUrl && imgEl.src !== imgHoverUrl) {
-      imgEl.classList.add("trocando-imagem");
+    cardElement.classList.add('exibir-hover');
+    const imgEl = cardElement.querySelector('.img-produto');
+
+    if (imgEl && imgHoverUrl && imgEl.getAttribute('src') !== imgHoverUrl) {
+      imgEl.classList.add('trocando-imagem');
       setTimeout(() => {
         imgEl.src = imgHoverUrl;
-        imgEl.classList.remove("trocando-imagem");
+        imgEl.classList.remove('trocando-imagem');
       }, 150);
     }
-  }, 150); // 0.5s
+  }, 150);
 }
 
 function cancelarHoverCard(cardElement, imgPadraoUrl) {
   const id = cardElement.getAttribute('data-id');
   clearTimeout(timersHover[id]);
 
-  cardElement.classList.remove("exibir-hover");
-  const imgEl = cardElement.querySelector(".img-produto");
-  
-  if (imgEl && imgPadraoUrl) {
-    imgEl.classList.add("trocando-imagem");
+  cardElement.classList.remove('exibir-hover');
+  const imgEl = cardElement.querySelector('.img-produto');
+
+  if (imgEl && imgPadraoUrl && imgEl.getAttribute('src') !== imgPadraoUrl) {
+    imgEl.classList.add('trocando-imagem');
     setTimeout(() => {
       imgEl.src = imgPadraoUrl;
-      imgEl.classList.remove("trocando-imagem");
+      imgEl.classList.remove('trocando-imagem');
     }, 150);
   }
 }
@@ -120,7 +200,7 @@ function selecionarOpcao(event, prodId, tipo, valor) {
   }
 }
 
-// Adicionar produto direto ao carrinho
+// Adicionar produto direto ao carrinho (pelo card)
 function adicionarDiretoCarrinho(event, prodId) {
   event.stopPropagation();
   event.preventDefault();
@@ -129,37 +209,12 @@ function adicionarDiretoCarrinho(event, prodId) {
   const card = document.getElementById(`card-${prodId}`);
   if (!card) return;
 
-  const tamanho = card.getAttribute('data-tamanho-selecionado');
-  const estampa = card.getAttribute('data-estampa-selecionada');
+  const tamanho = card.getAttribute('data-tamanho-selecionado') || null;
+  const estampa = card.getAttribute('data-estampa-selecionada') || null;
   const produto = PRODUTOS.find(p => p.id === prodId);
   if (!produto) return;
 
-  const item = {
-    id: produto.id,
-    nome: produto.nome,
-    preco: produto.preco,
-    imagem: produto.imagem || (produto.imagens && produto.imagens[0]),
-    tamanho: tamanho,
-    estampa: estampa,
-    quantidade: 1
-  };
-
-  let carrinho = [];
-  try {
-    carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
-  } catch (e) {
-    carrinho = [];
-  }
-
-  const idx = carrinho.findIndex(i => i.id === item.id && i.tamanho === item.tamanho && i.estampa === item.estampa);
-  if (idx > -1) {
-    carrinho[idx].quantidade += 1;
-  } else {
-    carrinho.push(item);
-  }
-
-  localStorage.setItem('carrinho', JSON.stringify(carrinho));
-  atualizarContadorHeader();
+  addCarrinho(produto, tamanho, null, estampa);
 
   // Feedback visual rápido no próprio botão antes de abrir a aba lateral
   const textoOriginal = btn.innerHTML;
@@ -175,10 +230,10 @@ function adicionarDiretoCarrinho(event, prodId) {
   }, 400);
 }
 
-// Gaveta Lateral do Carrinho (Slide-over sem Blur)
+// ===== Gaveta lateral do carrinho =====
 function renderizarGavetaCarrinho() {
   let gaveta = document.getElementById('carrinho-gaveta');
-  
+
   if (!gaveta) {
     gaveta = document.createElement('div');
     gaveta.id = 'carrinho-gaveta';
@@ -204,7 +259,7 @@ function renderizarGavetaCarrinho() {
 
   const containerItens = document.getElementById('gaveta-itens');
   const containerTotal = document.getElementById('gaveta-total-valor');
-  let carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
+  const carrinho = lerCarrinho();
 
   if (carrinho.length === 0) {
     containerItens.innerHTML = '<p class="carrinho-vazio-msg">Seu carrinho está vazio.</p>';
@@ -214,14 +269,20 @@ function renderizarGavetaCarrinho() {
 
   let total = 0;
   containerItens.innerHTML = carrinho.map((item, index) => {
-    total += item.preco * item.quantidade;
+    const q = qtdItem(item);
+    total += item.preco * q;
+    const det = [
+      item.tamanho ? 'Tamanho: ' + item.tamanho : '',
+      item.estampa ? 'Estampa: ' + item.estampa : '',
+      item.cor ? 'Cor: ' + item.cor : ''
+    ].filter(Boolean).join(' | ');
     return `
       <div class="gaveta-item">
-        <img src="${item.imagem}" alt="${esc(item.nome)}" />
+        <img src="${esc(item.imagem)}" alt="${esc(item.nome)}" />
         <div class="gaveta-item-info">
           <h4>${esc(item.nome)}</h4>
-          <p>${item.tamanho ? 'Tamanho: ' + item.tamanho : ''} ${item.estampa ? '| Estampa: ' + item.estampa : ''}</p>
-          <div class="gaveta-item-preco">${item.quantidade}x ${brl(item.preco)}</div>
+          <p>${esc(det)}</p>
+          <div class="gaveta-item-preco">${q}x ${brl(item.preco)}</div>
         </div>
         <button class="gaveta-remover-btn" onclick="removerItemGaveta(${index})">✕</button>
       </div>
@@ -243,20 +304,19 @@ function fecharGavetaCarrinho() {
 }
 
 function removerItemGaveta(index) {
-  let carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
+  const carrinho = lerCarrinho();
   carrinho.splice(index, 1);
-  localStorage.setItem('carrinho', JSON.stringify(carrinho));
-  atualizarContadorHeader();
+  gravarCarrinho(carrinho);
   renderizarGavetaCarrinho();
 }
 
-function atualizarContadorHeader() {
-  const carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
-  const total = carrinho.reduce((acc, item) => acc + (item.quantidade || 1), 0);
-  const contador = document.getElementById('contador');
-  if (contador) contador.textContent = total;
-}
-
-document.addEventListener("DOMContentLoaded", () => {
+// ===== Inicialização =====
+document.addEventListener('DOMContentLoaded', () => {
   atualizarContadorHeader();
+
+  // Faz os elementos .reveal aparecerem ao rolar (sem isso ficam invisíveis)
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('on'); io.unobserve(e.target); }
+  }), { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 });
