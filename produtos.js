@@ -60,7 +60,8 @@ const PRODUTOS = [
       "img/tabela-tamanho-B.jpg",
       "img/acesse-sua-mente-4-B.jpg"
     ],
-    tamanhos: ["35-37", "38-40", "41-43"]
+    tamanhos: ["P", "M", "G", "GG"],
+    estampas: ESTAMPAS_CAMISETA
   },
   {
     id: "eco-01",
