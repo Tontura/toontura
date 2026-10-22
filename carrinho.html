@@ -43,11 +43,12 @@
     <div id="painel-retirada" hidden><div id="pontos">Carregando opções...</div></div>
   </div>
 
-<div class="cupom">
-  <input type="text" id="c-cupom" placeholder="Cupom de desconto">
-  <button type="button" class="btn ghost" id="aplicar-cupom">Aplicar</button>
-  <p id="msg-cupom"></p>
-</div>  
+<h3>Cupom de desconto</h3>
+<div class="linha cupom-linha">
+  <input type="text" id="c-cupom" placeholder="Código do cupom" autocapitalize="characters" autocomplete="off">
+  <button type="button" class="btn-cupom" id="aplicar-cupom">Aplicar</button>
+</div>
+<p id="msg-cupom"></p>
   
   <div class="total"><span>Total</span><span id="total">R$ 0,00</span></div>
   <button class="btn" id="pagar">Pagar com Mercado Pago</button>
