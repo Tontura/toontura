@@ -41,15 +41,20 @@
       <div id="fretes">Informe o CEP para ver as opções de frete.</div>
     </div>
     <div id="painel-retirada" hidden><div id="pontos">Carregando opções...</div></div>
+
+    <h3>Cupom de desconto</h3>
+    <div class="linha cupom-linha">
+      <input type="text" id="c-cupom" placeholder="Código do cupom" autocapitalize="characters" autocomplete="off">
+      <button type="button" class="btn-cupom" id="aplicar-cupom">Aplicar</button>
+    </div>
+    <p id="msg-cupom"></p>
   </div>
 
-<h3>Cupom de desconto</h3>
-<div class="linha cupom-linha">
-  <input type="text" id="c-cupom" placeholder="Código do cupom" autocapitalize="characters" autocomplete="off">
-  <button type="button" class="btn-cupom" id="aplicar-cupom">Aplicar</button>
-</div>
-<p id="msg-cupom"></p>
-  
+  <div class="resumo">
+    <div><span>Subtotal</span><span id="r-sub">R$ 0,00</span></div>
+    <div id="r-desc-linha" hidden><span>Desconto <small id="r-cupom"></small></span><span id="r-desc">- R$ 0,00</span></div>
+    <div><span>Entrega</span><span id="r-frete">a calcular</span></div>
+  </div>
   <div class="total"><span>Total</span><span id="total">R$ 0,00</span></div>
   <button class="btn" id="pagar">Pagar com Mercado Pago</button>
   <p id="msg"></p>
@@ -62,9 +67,17 @@
 <script>
 const $ = id => document.getElementById(id);
 let subtotal = 0, modo = 'envio', freteSel = null, pontoSel = null, pontosLista = [], whatsappLoja = '';
+let cupom = null, desconto = 0;
 
 const valorEntrega = () => modo==='retirada' ? 0 : (freteSel ? freteSel.preco : 0);
-const atualizarTotal = () => { $('total').textContent = brl(subtotal + valorEntrega()); };
+
+function atualizarTotal(){
+  $('r-sub').textContent = brl(subtotal);
+  $('r-desc-linha').hidden = !desconto;
+  if (desconto){ $('r-desc').textContent = '- ' + brl(desconto); $('r-cupom').textContent = '(' + cupom + ')'; }
+  $('r-frete').textContent = modo==='retirada' ? 'Grátis' : (freteSel ? brl(freteSel.preco) : 'a calcular');
+  $('total').textContent = brl(Math.max(0, subtotal - desconto) + valorEntrega());
+}
 
 function resumoDoCarrinho(){
   return lerCarrinho().map(i=>{
@@ -83,7 +96,16 @@ function render(){
   }).join('');
   $('pagar').disabled = false; atualizarTotal(); atualizaContador();
 }
-function remover(idx){ const c = lerCarrinho(); c.splice(idx,1); gravarCarrinho(c); render(); calcularFrete(); }
+
+function remover(idx){
+  const c = lerCarrinho(); c.splice(idx,1); gravarCarrinho(c); render();
+  if (!c.length){
+    cupom = null; desconto = 0; $('msg-cupom').textContent = ''; $('fretes').textContent = 'Informe o CEP para ver as opções de frete.';
+    freteSel = null; atualizarTotal(); return;
+  }
+  calcularFrete();
+  if (cupom) aplicarCupom(cupom);
+}
 
 async function calcularFrete(){
   const cep = $('c-cep').value.replace(/\D/g,''), box = $('fretes');
@@ -99,6 +121,28 @@ async function calcularFrete(){
     box.querySelectorAll('input').forEach(el=>el.onchange=()=>{ freteSel = d.opcoes[Number(el.value)]; atualizarTotal(); });
   } catch(e){ box.textContent = 'Erro ao calcular o frete.'; }
 }
+
+// ===== Cupom =====
+async function aplicarCupom(codigo){
+  const m = $('msg-cupom');
+  codigo = String(codigo || '').trim().toUpperCase();
+  if (!codigo){ cupom = null; desconto = 0; m.className = ''; m.textContent = ''; atualizarTotal(); return; }
+  m.className = ''; m.textContent = 'Verificando cupom...';
+  try {
+    const itens = lerCarrinho().map(i=>({id:i.id,qtd:qtdItem(i)}));
+    const r = await fetch('/api/cupom',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({codigo,itens})});
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.erro || 'Cupom inválido.');
+    cupom = codigo; desconto = Number(d.desconto) || 0;
+    m.className = 'ok'; m.textContent = 'Cupom ' + codigo + ' aplicado: - ' + brl(desconto);
+  } catch(e){
+    cupom = null; desconto = 0;
+    m.className = 'erro'; m.textContent = e.message;
+  }
+  atualizarTotal();
+}
+$('aplicar-cupom').onclick = () => aplicarCupom($('c-cupom').value);
+$('c-cupom').addEventListener('keydown', e => { if (e.key==='Enter'){ e.preventDefault(); aplicarCupom($('c-cupom').value); } });
 
 document.querySelectorAll('input[name=modo]').forEach(el=>el.onchange=()=>{
   modo = el.value; $('painel-envio').hidden = modo!=='envio'; $('painel-retirada').hidden = modo!=='retirada'; atualizarTotal();
@@ -134,13 +178,13 @@ $('pagar').onclick = async ()=>{
   try {
     const itens = lerCarrinho().map(i=>({id:i.id,qtd:qtdItem(i),tamanho:i.tamanho||'Único',estampa:i.estampa||null,cor:i.cor||null}));
     const r = await fetch('/api/criar-pagamento',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({itens,cliente,entrega: modo==='retirada' ? {tipo:'retirada',pontoId:pontoSel} : {tipo:'envio',freteId:freteSel.id}})});
+      body:JSON.stringify({itens,cliente,cupom,entrega: modo==='retirada' ? {tipo:'retirada',pontoId:pontoSel} : {tipo:'envio',freteId:freteSel.id}})});
     const d = await r.json();
     if (!r.ok || !d.url) throw new Error(d.erro || 'Erro interno ao processar pagamento');
 
     const ponto = modo==='retirada' ? pontosLista.find(p=>p.id===pontoSel) : null;
     localStorage.setItem('ultimoPedido', JSON.stringify({nome:cliente.nome,tipo:modo,local:ponto?ponto.nome:'',combinar:!!(ponto&&ponto.combinar),resumo:resumoDoCarrinho(),whatsapp:whatsappLoja}));
-    location.href = d.url;   // abre o site do Mercado Pago
+    location.href = d.url;
   } catch(e){ msg.textContent = 'Erro: '+e.message; btn.disabled = false; btn.textContent = 'Pagar com Mercado Pago'; }
 };
 render();
