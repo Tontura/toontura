@@ -38,23 +38,28 @@ const PRODUTOS = [
     nome: "Acesse a Sua Mente ♦ Preta",
     categoria: "camisetas",
     preco: 79.9,
-    imagem: "img/cam-acesse-sua-mente-1-P.png",
+    imagem: "img/acesse-sua-mente-1-P.jpg",
     imagens: [
-      "img/cam-acesse-sua-mente-1-P.png",
-      "img/cam-acesse-sua-mente-2-P.png",
-      "img/tabela-tamanho-P.png",
-      "img/cam-acesse-sua-mente-4-P.png"
+      "img/acesse-sua-mente-1-P.jpg",
+      "img/acesse-sua-mente-2-P.jpg",
+      "img/tabela-tamanho-P.jpg",
+      "img/acesse-sua-mente-4-P.jpg"
     ],
     tamanhos: ["P", "M", "G", "GG"],
     estampas: ESTAMPAS_CAMISETA
   },
   {
-    id: "chi-01",
+    id: "cam-04",
     nome: "Acesse a Sua Mente ♦ Branca",
-    categoria: "acessorios",
-    preco: 49.9,
-    imagem: "img/chi-01.png",
-    imagens: ["img/chi-01.png"],
+    categoria: "camisetas",
+    preco: 79.9,
+    imagem: "img/acesse-sua-mente-1-B.jpg",
+    imagens: [
+      "img/acesse-sua-mente-1-B.jpg",
+      "img/acesse-sua-mente-2-B.jpg",
+      "img/tabela-tamanho-B.jpg",
+      "img/acesse-sua-mente-4-B.jpg"
+    ],
     tamanhos: ["35-37", "38-40", "41-43"]
   },
   {
