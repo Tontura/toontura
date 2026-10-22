@@ -93,6 +93,36 @@ const PRODUTOS = [
     tamanhos: ["P", "M", "G", "GG"],
     estampas: ESTAMPAS_CAMISETA
   },
+  {
+    id: "cam-07",
+    nome: "Binário ♦ Branca",
+    categoria: "camisetas",
+    preco: 79.9,
+    imagem: "img/binario-1-B.jpg",
+    imagens: [
+      "img/binario-1-B.jpg",
+      "img/binario-2-B.jpg",
+      "img/tabela-tamanho-B.jpg",
+      "img/binario-4-B.jpg"
+    ],
+    tamanhos: ["P", "M", "G", "GG"],
+    estampas: ESTAMPAS_CAMISETA
+  },
+  {
+    id: "cam-08",
+    nome: "Binário ♦ Preta",
+    categoria: "camisetas",
+    preco: 79.9,
+    imagem: "img/binario-1-P.jpg",
+    imagens: [
+      "img/binario-1-P.jpg",
+      "img/binario-2-P.jpg",
+      "img/tabela-tamanho-P.jpg",
+      "img/binario-4-P.jpg"
+    ],
+    tamanhos: ["P", "M", "G", "GG"],
+    estampas: ESTAMPAS_CAMISETA
+  },
 ];
 
 if (typeof module !== "undefined") module.exports = PRODUTOS;
