@@ -78,6 +78,21 @@ const PRODUTOS = [
     tamanhos: ["P", "M", "G", "GG"],
     estampas: ESTAMPAS_CAMISETA
   },
+   {
+    id: "cam-06",
+    nome: "Sem Internet ♦ Preta",
+    categoria: "camisetas",
+    preco: 79.9,
+    imagem: "img/sem-internet-1-P.jpg",
+    imagens: [
+      "img/sem-internet-1-P.jpg",
+      "img/sem-internet-2-P.jpg",
+      "img/tabela-tamanho-P.jpg",
+      "img/sem-internet-4-P.jpg"
+    ],
+    tamanhos: ["P", "M", "G", "GG"],
+    estampas: ESTAMPAS_CAMISETA
+  },
 ];
 
 if (typeof module !== "undefined") module.exports = PRODUTOS;
