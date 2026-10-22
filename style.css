@@ -989,3 +989,93 @@ footer {
 .resumo small { color: var(--red); }
 
 .total { margin-top: 10px; }
+
+/* ===== Rodapé informativo (home) ===== */
+.rodape-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.rodape-card {
+  border: 1px solid rgba(255,255,255,.12);
+  padding: 26px;
+}
+.rodape-card h3 {
+  font: 400 26px 'Bebas Neue', sans-serif;
+  letter-spacing: .06em;
+  color: var(--red);
+  margin-bottom: 14px;
+}
+.rodape-card p,
+.rodape-links li { color: var(--dim); line-height: 1.9; }
+.rodape-card a { color: inherit; text-decoration: none; transition: .15s; }
+.rodape-card a:hover { color: #fff; }
+.rodape-links { list-style: none; padding: 0; margin: 0; }
+
+.redes { display: flex; gap: 14px; }
+.redes a {
+  width: 48px; height: 48px;
+  display: grid; place-items: center;
+  border: 1px solid rgba(255,255,255,.2);
+  color: var(--dim);
+  transition: .15s;
+}
+.redes a:hover { background: var(--red); border-color: var(--red); color: #fff; }
+.redes svg { width: 22px; height: 22px; }
+
+/* ===== Página institucional ===== */
+.inst-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 40px;
+  margin-top: 30px;
+  align-items: start;
+}
+.inst-menu {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255,255,255,.12);
+  position: sticky;
+  top: 90px;
+}
+.inst-menu a {
+  padding: 14px 18px;
+  color: var(--dim);
+  text-decoration: none;
+  border-left: 3px solid transparent;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  transition: .15s;
+}
+.inst-menu a:last-child { border-bottom: 0; }
+.inst-menu a:hover { color: #fff; }
+.inst-menu a.ativo { color: #fff; border-left-color: var(--red); background: rgba(255,255,255,.04); }
+
+.inst-sec h2 {
+  font: 400 44px 'Bebas Neue', sans-serif;
+  letter-spacing: .04em;
+  color: var(--red);
+  margin-bottom: 18px;
+}
+.inst-sec p, .inst-sec li { color: var(--dim); line-height: 1.8; margin-bottom: 12px; }
+.inst-sec ol, .inst-sec ul { padding-left: 22px; }
+.inst-sec strong { color: #fff; }
+.inst-sec[hidden] { display: none; }
+
+/* ===== Mobile ===== */
+@media (max-width: 800px) {
+  .rodape-grid { grid-template-columns: 1fr; }
+  .inst-layout { grid-template-columns: 1fr; gap: 24px; }
+  .inst-menu {
+    flex-direction: row;
+    overflow-x: auto;
+    position: static;
+  }
+  .inst-menu a {
+    white-space: nowrap;
+    border-left: 0;
+    border-bottom: 3px solid transparent;
+    border-right: 1px solid rgba(255,255,255,.08);
+  }
+  .inst-menu a.ativo { border-bottom-color: var(--red); }
+  .inst-sec h2 { font-size: 36px; }
+}
