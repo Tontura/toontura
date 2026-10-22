@@ -5,7 +5,7 @@ const PRODUTOS = require('../produtos.js');
 // validoAte:  data limite (AAAA-MM-DD), opcional
 // ativo:      false desliga o cupom sem apagar
 const CUPONS = {
-  PRIMEIRA10: { percentual: 10, validoAte: '2026-12-31', ativo: true },
+  PRIMEIRA10: { percentual: 10, validoAte: '2026-12-31', ativo: false },
   AMIGO15:    { percentual: 15, validoAte: '2026-11-30', ativo: true },
 };
 // =============================================
