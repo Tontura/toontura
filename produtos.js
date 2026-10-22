@@ -8,12 +8,12 @@ const PRODUTOS = [
     nome: "Fora do Ar ♦ Preta",
     categoria: "camisetas",
     preco: 79.9,
-    imagem: "img/cam-fora-do-ar-1-P.png",
+    imagem: "img/fora-do-ar-1-P.jpg",
     imagens: [
-      "img/cam-fora-do-ar-1-P.png",
-      "img/cam-fora-do-ar-2-P.png",
-      "img/tabela-tamanho-P.png",
-      "img/cam-fora-do-ar-4-P.png"
+      "img/fora-do-ar-1-P.jpg",
+      "img/fora-do-ar-2-P.jpg",
+      "img/tabela-tamanho-P.jpg",
+      "img/fora-do-ar-4-P.jpg"
     ],
     tamanhos: ["P", "M", "G", "GG"],
     estampas: ESTAMPAS_CAMISETA
@@ -23,12 +23,12 @@ const PRODUTOS = [
     nome: "Fora do Ar ♦ Branca",
     categoria: "camisetas",
     preco: 79.9,
-   imagem: "img/cam-fora-do-ar-1-B.png",
+   imagem: "img/fora-do-ar-1-B.jpg",
     imagens: [
-      "img/cam-fora-do-ar-1-B.png",
-      "img/cam-fora-do-ar-2-B.png",
-      "img/tabela-tamanho-B.png",
-      "img/cam-fora-do-ar-4-B.png"
+      "img/fora-do-ar-1-B.jpg",
+      "img/fora-do-ar-2-B.jpg",
+      "img/tabela-tamanho-B.jpg",
+      "img/fora-do-ar-4-B.jpg"
     ],
     tamanhos: ["P", "M", "G", "GG"],
     estampas: ESTAMPAS_CAMISETA
