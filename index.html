@@ -54,7 +54,7 @@
 <section class="sec" id="contato"><div class="wrap" style="text-align:center">
   <h2 class="reveal">Fala com a gente</h2>
   <p class="reveal" style="margin:10px 0 20px;color:var(--dim)">Dúvidas, personalização ou entrega combinada.</p>
-  <a class="btn reveal" id="whats" href="#">Chamar no WhatsApp</a>
+  <a class="btn reveal" id="whats" href="https://wa.me/5512974107187">Chamar no WhatsApp</a>
 </div></section>
 
   <section class="section wrap" id="contato">
@@ -119,7 +119,7 @@ renderizarProdutos('todos');
 
 // Busca link do WhatsApp
 fetch('/api/pontos').then(r=>r.json()).then(d=>{
-  if (d.whatsapp) document.getElementById('whats').href = 'https://wa.me/'+d.whatsapp+'?text='+encodeURIComponent('Olá! Vim pelo site da ToonTura.');
+  if (d.whatsapp) document.getElementById('whats').href = 'https://wa.me/5512974107187'?text='+encodeURIComponent('Olá! Vim pelo site da ToonTura.');
 }).catch(()=>{});
 </script>
 </body>
