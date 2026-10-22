@@ -64,14 +64,20 @@ const PRODUTOS = [
     estampas: ESTAMPAS_CAMISETA
   },
   {
-    id: "eco-01",
-    nome: "Ecobag ToonTura",
-    categoria: "acessorios",
-    preco: 39.9,
-    imagem: "img/eco-01.png",
-    imagens: ["img/eco-01.png"],
-    tamanhos: ["Único"]
-  }
+    id: "cam-05",
+    nome: "Sem Internet ♦ Branca",
+    categoria: "camisetas",
+    preco: 79.9,
+    imagem: "img/sem-internet-1-B.jpg",
+    imagens: [
+      "img/sem-internet-1-B.jpg",
+      "img/sem-internet-2-B.jpg",
+      "img/tabela-tamanho-B.jpg",
+      "img/sem-internet-4-B.jpg"
+    ],
+    tamanhos: ["P", "M", "G", "GG"],
+    estampas: ESTAMPAS_CAMISETA
+  },
 ];
 
 if (typeof module !== "undefined") module.exports = PRODUTOS;
