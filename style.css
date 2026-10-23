@@ -1079,3 +1079,33 @@ footer {
   .inst-menu a.ativo { border-bottom-color: var(--red); }
   .inst-sec h2 { font-size: 36px; }
 }
+
+@media (max-width: 760px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .card-link-detalhes h3 {
+    font-size: 0.8rem;
+    line-height: 1.2;
+  }
+
+  .card-link-detalhes .preco {
+    font-size: 0.8rem;
+  }
+
+  .tag {
+    top: 6px;
+    left: 6px;
+    padding: 1px 7px;
+    font-size: 12px;
+  }
+}
+
+/* Celular/tablet sem mouse: não existe hover, então esconde o painel de tamanho */
+@media (hover: none) {
+  .retangulo-hover {
+    display: none;
+  }
+}
