@@ -27,8 +27,7 @@
 <!-- HERO COM FOTO DE FUNDO (img/hero.jpg) E LOGO CENTRALIZADA -->
 <section class="hero">
   <img src="img/logo.png" alt="ToonTura">
- <!-- <div class="sub">NOVA COLEÇÃO</div>-->
-  <p> </p>
+  <!-- <div class="sub">NOVA COLEÇÃO</div> -->
   <a class="btn" href="#colecao">Ver coleção</a>
 </section>
 
@@ -54,10 +53,11 @@
 <section class="sec" id="contato"><div class="wrap" style="text-align:center">
   <h2 class="reveal">Fala com a gente</h2>
   <p class="reveal" style="margin:10px 0 20px;color:var(--dim)">Dúvidas, personalização ou entrega combinada.</p>
-  <a class="btn reveal" id="whats" href="https://wa.me/5512974107187">Chamar no WhatsApp</a>
+  <a class="btn reveal" id="whats" href="https://wa.me/5512974107187?text=Ol%C3%A1!%20Vim%20pelo%20site%20da%20ToonTura." target="_blank" rel="noopener">Chamar no WhatsApp</a>
 </div></section>
 
-  <section class="section wrap" id="contato">
+<!-- RODAPÉ INFORMATIVO: contato, institucional e redes -->
+<section class="sec wrap" id="rodape">
   <div class="rodape-grid">
 
     <div class="rodape-card">
@@ -97,7 +97,7 @@
 
   </div>
 </section>
-  
+
 <footer><div class="wrap foot-row">
   <img src="img/logo.png" alt="ToonTura"><div>© 2026 ToonTura.</div>
 </div></footer>
@@ -116,11 +116,6 @@ document.getElementById('chips').addEventListener('click', e => {
 
 // Renderização inicial
 renderizarProdutos('todos');
-
-// Busca link do WhatsApp
-fetch('/api/pontos').then(r=>r.json()).then(d=>{
-  if (d.whatsapp) document.getElementById('whats').href = 'https://wa.me/5512974107187'?text='+encodeURIComponent('Olá! Vim pelo site da ToonTura.');
-}).catch(()=>{});
 </script>
 </body>
 </html>
