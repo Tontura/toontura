@@ -1109,3 +1109,6 @@ footer {
     display: none;
   }
 }
+@media (max-width: 760px) {
+  .hero { background-position: 70% center; }
+}
